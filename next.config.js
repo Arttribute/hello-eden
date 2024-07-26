@@ -11,6 +11,10 @@ const nextConfig = {
         protocol: "https",
         hostname: "edenartlab-stage-data.s3.us-east-1.amazonaws.com",
       },
+      {
+        protocol: "https",
+        hostname: "edenartlab-stage-data.s3.amazonaws.com"
+      }
     ],
   },
 };
