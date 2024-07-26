@@ -7,6 +7,8 @@ import CreateBox from "@/components/CreateBox";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { fileToBase64 } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 const MAX_FILE_SIZE = 5000000;
 
@@ -40,8 +42,32 @@ export default function Home() {
     },
   });
 
-  const [resultImageUrl, setResultImageUrl] = useState(undefined);
+  const [resultImageUrl, setResultImageUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<any | null>(null);
+  const [artifactId, setArtifactId] = useState<string | null>(null);
+  const [hasAttribution, setHasAttribution] = useState(false);
+
+  const makeAttribution = async () => {
+    setLoading(true);
+    try {
+      const attributionRes = await axios
+        .post("/api/attribute", {
+          artifactId: artifactId,
+        })
+        .catch((error) => {
+          throw error;
+        });
+
+      console.log(attributionRes.data);
+      setHasAttribution(true);
+    } catch (error: any) {
+      console.error(error);
+      setErrorMsg(error.toString());
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setLoading(true);
@@ -55,6 +81,27 @@ export default function Home() {
         throw new Error(
           "Only .jpg, .jpeg, .png and .webp formats are supported."
         );
+
+      const imageAsBase64 = await fileToBase64(values.file[0]);
+
+      const imageRes = await axios
+        .post("/api/remix", {
+          text_input: values.prompt,
+          image_input: imageAsBase64,
+        })
+        .catch((error) => {
+          console.error(error);
+          const artifactId = error.response.data.data[0].imageId;
+          if (artifactId) {
+            setArtifactId(artifactId);
+            throw new Error(`${error.response.data.error}: ID: ${artifactId}`);
+          }
+          throw error;
+        });
+
+      const images = imageRes.data;
+      console.log(images);
+      setResultImageUrl(images[0].url);
 
       // const message: string | null = await fetchMessage(web3Address);
       // const signedMessage: string | null = Boolean(minipay)
@@ -76,27 +123,30 @@ export default function Home() {
       //   }),
       // });
 
-      const imageTaskResponse = await axios.post("/api/submit", {
-        text_input: values.prompt,
-      });
-      const { taskId } = imageTaskResponse.data;
+      // const imageTaskResponse = await axios.post("/api/submit", {
+      //   text_input: values.prompt,
+      // });
 
-      let imageUrl = null;
+      // const { taskId } = imageTaskResponse.data;
 
-      const pollForImage = async () => {
-        const pollResponse = await axios.post("/api/poll", { taskId });
-        if (pollResponse.data.uri) {
-          imageUrl = pollResponse.data.uri;
-          setResultImageUrl(imageUrl);
-          setLoading(false);
-        } else {
-          setTimeout(pollForImage, 4000); // Poll every 4 seconds
-        }
-      };
+      // let imageUrl = null;
 
-      pollForImage();
+      // const pollForImage = async () => {
+      //   const pollResponse = await axios.post("/api/poll", { taskId });
+      //   if (pollResponse.data.uri) {
+      //     imageUrl = pollResponse.data.uri;
+      //     setResultImageUrl(imageUrl);
+      //     setLoading(false);
+      //   } else {
+      //     setTimeout(pollForImage, 4000); // Poll every 4 seconds
+      //   }
+      // };
+
+      // pollForImage();
     } catch (error: any) {
-      console.error(error);
+      const errStr = error.toString();
+      setErrorMsg(errStr);
+    } finally {
       setLoading(false);
     }
   };
@@ -133,6 +183,13 @@ export default function Home() {
             <h1 className="text-lg">Nothing to see!</h1>
           </div>
         )}
+        {errorMsg && <p className="text-red-500">{errorMsg}</p>}
+        {artifactId && (
+          <Button onClick={makeAttribution} disabled={loading}>
+            Make Attribution
+          </Button>
+        )}
+        {hasAttribution && <p>Attribution successful!</p>}
       </main>
     </div>
   );
