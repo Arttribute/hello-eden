@@ -6,8 +6,8 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
   try {
     const eden = new EdenClient({
+      edenApiUrl: process.env.EDEN_API_URL,
       apiKey: process.env.EDEN_API_KEY,
-      apiSecret: process.env.EDEN_API_SECRET,
     });
 
     const { task } = await eden.tasks.get({ taskId });
