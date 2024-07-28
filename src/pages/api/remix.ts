@@ -30,9 +30,14 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     );
 
     if (attributionData[0].attribution === false) {
+      const {
+        data: { data },
+      } = await axios.get(
+        `http://localhost:3200/v2/artifacts/${attributionData[0].imageId}`
+      );
       return res
         .status(401)
-        .json({ error: "Fair use checks failed", data: attributionData });
+        .json({ error: "Fair use checks failed", data: data });
     }
 
     if (attributionData[0].imageId === null) {
@@ -68,8 +73,8 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       console.log(result);
       return res.status(200).json(result);
     }
-  } catch (error) {
-    console.error(error);
+  } catch (error: any) {
+    console.error(error.response.data);
     return res.status(500).json({ error: "Internal server error" });
   }
 };

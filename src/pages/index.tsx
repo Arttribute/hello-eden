@@ -10,6 +10,7 @@ import { z } from "zod";
 import { fileToBase64 } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { InboxIcon, Loader2Icon } from "lucide-react";
+import AttributeDialog from "@/components/AttributeDialog";
 
 const MAX_FILE_SIZE = 5000000;
 
@@ -39,14 +40,14 @@ export default function Home() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       file: undefined,
-      // prompt: "",
+      prompt: "",
     },
   });
 
   const [resultImageUrl, setResultImageUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<any | null>(null);
-  const [artifactId, setArtifactId] = useState<string | null>(null);
+  const [retrievedArtifact, setRetrievedArtifact] = useState<any | null>(null);
   const [hasAttribution, setHasAttribution] = useState(false);
   const [hasRegistration, setHasRegistration] = useState<boolean | null>(null);
   const [isLoadingRegistration, setIsLoadingRegistration] = useState(false);
@@ -82,7 +83,7 @@ export default function Home() {
     try {
       const attributionRes = await axios
         .post("/api/attribute", {
-          artifactId: artifactId,
+          artifactId: retrievedArtifact.id,
         })
         .catch((error) => {
           throw error;
@@ -121,21 +122,16 @@ export default function Home() {
         })
         .catch((error) => {
           console.error(error);
-          const artifactId = error.response.data.data
-            ? error.response.data.data[0].imageId
-            : null;
-          if (artifactId) {
-            setArtifactId(artifactId);
-            throw new Error(`${error.response.data.error}: ID: ${artifactId}`);
-          }
+          setRetrievedArtifact(error.response.data?.data || null); // if artifact exists without attribution
+
           if (error.response.data.error === "This image is not registered") {
             setHasRegistration(false);
           }
+
           throw new Error(`${error.response.data.error}`);
         });
 
       const images = imageRes.data;
-      console.log(images);
       setResultImageUrl(images[0].url);
     } catch (error: any) {
       const errStr = error.toString();
@@ -165,8 +161,7 @@ export default function Home() {
           <div className="flex justify-center">
             <Image
               src={resultImageUrl}
-              // alt={form.getValues("prompt")}
-              alt="Artifact"
+              alt={form.getValues("prompt")}
               width={500}
               height={500}
               className="rounded-lg shadow-lg"
@@ -179,21 +174,20 @@ export default function Home() {
           </div>
         )}
         {errorMsg && <p className="text-red-500">{errorMsg}</p>}
-        {artifactId && (
-          <Button onClick={makeAttribution} disabled={loading}>
-            {isLoadingAttribution ? (
-              <>
-                <Loader2Icon className="animate-spin w-4 h-4" />
-                Attributing...
-              </>
-            ) : (
-              "Make Attribution"
-            )}
-          </Button>
+        {retrievedArtifact && (
+          <>
+            {" "}
+            <p className="mb-3">You need to make an attribution</p>
+            <AttributeDialog
+              artifact={retrievedArtifact}
+              loading={isLoadingAttribution}
+              onAttribute={makeAttribution}
+            />
+          </>
         )}
         {hasRegistration === false && (
           <div>
-            <p>
+            <p className="mb-3">
               Are you the creator of this image? Register it on Arttribute
               artifacts registry here:
             </p>
