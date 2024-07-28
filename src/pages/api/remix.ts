@@ -1,6 +1,7 @@
 import axios from "axios";
 import { EdenClient } from "@edenlabs/eden-sdk";
 import { NextApiRequest, NextApiResponse } from "next";
+import { base64ToFile } from "@/lib/utils";
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const { image_input, text_input } = req.body;
@@ -9,13 +10,9 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     {
       asset: {
         data: image_input, // Base64 string of the image
-        mimetype: "image/jpeg", // Adjust the mimetype as needed
-        name: "referenceImage.jpg", // Adjust the name as needed
+        mimetype: "image/jpeg",
+        name: "referenceImage.jpg",
       },
-      name: "Reference Image",
-      license: "Open", // Adjust the license as needed
-      whitelist: ["3fa85f64-5717-4562-b3fc-2c963f66afa6"], // Adjust as needed
-      blacklist: ["3fa85f64-5717-4562-b3fc-2c963f66afa6"], // Adjust as needed
     },
   ];
   try {
@@ -43,6 +40,20 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     }
 
     if (attributionData[0].imageId && attributionData[0].attribution) {
+      // uploading to cloudinary to get URL
+      const imageAsFile = base64ToFile(image_input, "referenceImage.jpg");
+      const data = new FormData();
+      data.append("file", imageAsFile);
+      data.append("upload_preset", "studio-upload");
+
+      const cloudinaryRes = await axios.post(
+        "https://api.cloudinary.com/v1_1/arttribute/upload",
+        data
+      );
+
+      const uploadedFile = cloudinaryRes.data;
+
+      // eden remix logic
       const eden = new EdenClient({
         edenApiUrl: process.env.EDEN_API_URL,
         apiKey: process.env.EDEN_API_KEY,
@@ -51,7 +62,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       const result = await eden.createV2({
         workflow: "remix",
         args: {
-          image: "https://khalifafumo.me/me.jpg",
+          image: uploadedFile.secure_url,
         },
       });
       console.log(result);
