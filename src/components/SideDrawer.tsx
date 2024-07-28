@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 
 import { XIcon, Menu, Boxes, Library, Goal } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
+import { Separator } from "./ui/separator";
 
 const drawerItems = [
   {
@@ -42,7 +44,8 @@ export const CustomDrawerContent = ({
         </DrawerClose>
       </div>
     )}
-    <h1 className="text-xl font-bold">Eden x Arttribute</h1>
+    <Image src="/eden.webp" alt="Eden Art" width={40} height={40} />
+    <Separator />
     <div className="flex flex-col space-y-4 mt-4">
       {drawerItems.map((item, index) => (
         <Button asChild key={index} variant="ghost" className="justify-start">
