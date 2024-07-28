@@ -6,8 +6,8 @@ settings:
 
 dependencies:
   '@edenlabs/eden-sdk':
-    specifier: ^0.3.1
-    version: 0.3.1
+    specifier: ^0.3.9
+    version: 0.3.9
   '@hookform/resolvers':
     specifier: ^3.9.0
     version: 3.9.0(react-hook-form@7.52.1)
@@ -103,10 +103,10 @@ packages:
       regenerator-runtime: 0.14.0
     dev: true
 
-  /@edenlabs/eden-sdk@0.3.1:
-    resolution: {integrity: sha512-2iwTFKSnXgwgRf4GRl6SWvYvSy4cr7oO2V2WkSDYNgIh0juWOywU9S0SHgDakvPCdMKTLXW6nHXKnfTWSFbP7Q==}
+  /@edenlabs/eden-sdk@0.3.9:
+    resolution: {integrity: sha512-3pb9rwPRasLzZdo0HkjfQoFb/OO1bWSRZCATh2czGrqpGFVkpD8K7Sm63ot3hMHokINdgNd5CETeP3DJQ+7RSg==}
     dependencies:
-      axios: 1.6.0
+      axios: 1.7.2
       event-source-polyfill: 1.0.31
       eventsource: 2.0.2
     transitivePeerDependencies:
@@ -889,6 +889,16 @@ packages:
       - debug
     dev: false
 
+  /axios@1.7.2:
+    resolution: {integrity: sha512-2A8QhOMrbomlDuiLeK9XibIBzuHeRcqqNOHp0Cyp5EoJ1IFDh+XZH3A6BkXtv0K4gFGCI0Y4BM7B1wOEi0Rmgw==}
+    dependencies:
+      follow-redirects: 1.15.6
+      form-data: 4.0.0
+      proxy-from-env: 1.1.0
+    transitivePeerDependencies:
+      - debug
+    dev: false
+
   /axobject-query@3.2.1:
     resolution: {integrity: sha512-jsyHu61e6N4Vbz/v18DHwWYKK0bSWLqn47eeDSKPB7m8tqMHF9YJ+mhIk2lVteyZrY8tnSj/jHOv4YiTCuCJgg==}
     dependencies:
@@ -1604,6 +1614,16 @@ packages:
 
   /follow-redirects@1.15.3:
     resolution: {integrity: sha512-1VzOtuEM8pC9SFU1E+8KfTjZyMztRsgEfwQl44z8A25uy13jSzTj6dyK2Df52iV0vgHCfBwLhDWevLn95w5v6Q==}
+    engines: {node: '>=4.0'}
+    peerDependencies:
+      debug: '*'
+    peerDependenciesMeta:
+      debug:
+        optional: true
+    dev: false
+
+  /follow-redirects@1.15.6:
+    resolution: {integrity: sha512-wWN62YITEaOpSK584EZXJafH1AGpO8RVgElfkuXbTOrPX4fIfOyEpW/CsiNd8JdYrAoOvafRTOEnvsO++qCqFA==}
     engines: {node: '>=4.0'}
     peerDependencies:
       debug: '*'
