@@ -16,7 +16,7 @@ import type { UseFormReturn } from "react-hook-form";
 type Props = {
   form: UseFormReturn<
     {
-      prompt: string;
+      // prompt: string;
       file?: any;
     },
     any,
@@ -80,7 +80,7 @@ const CreateBox = ({ form, onSubmit, loading }: Props) => {
             </FormItem>
           )}
         />
-        <FormField
+        {/* <FormField
           control={form.control}
           name="prompt"
           render={({ field }) => (
@@ -95,17 +95,20 @@ const CreateBox = ({ form, onSubmit, loading }: Props) => {
               <FormMessage />
             </FormItem>
           )}
-        />
+        /> */}
         <Button
           type="submit"
           className="w-full lg:w-72"
           disabled={loading || form.formState.isSubmitting}
         >
-          {loading ||
-            (form.formState.isSubmitting && (
-              <Loader2 className="w-4 h-4" />
-            ))}{" "}
-          Generate
+          {form.formState.isSubmitting ? (
+            <>
+              <Loader2 className="animate-spin w-4 h-4" />
+              Remixing...
+            </>
+          ) : (
+            "Remix"
+          )}
         </Button>
       </form>
     </Form>

@@ -9,6 +9,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { fileToBase64 } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { Loader2Icon } from "lucide-react";
 
 const MAX_FILE_SIZE = 5000000;
 
@@ -30,7 +31,7 @@ const formSchema = z.object({
       (files: FileList) => ACCEPTED_IMAGE_MIME_TYPES.includes(files?.[0]?.type),
       "Only .jpg, .jpeg, .png and .webp formats are supported."
     ),
-  prompt: z.string().min(1, "Please enter a prompt."),
+  // prompt: z.string().min(1, "Please enter a prompt."),
 });
 
 export default function Home() {
@@ -38,7 +39,7 @@ export default function Home() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       file: undefined,
-      prompt: "",
+      // prompt: "",
     },
   });
 
@@ -47,9 +48,37 @@ export default function Home() {
   const [errorMsg, setErrorMsg] = useState<any | null>(null);
   const [artifactId, setArtifactId] = useState<string | null>(null);
   const [hasAttribution, setHasAttribution] = useState(false);
+  const [hasRegistration, setHasRegistration] = useState<boolean | null>(null);
+  const [isLoadingRegistration, setIsLoadingRegistration] = useState(false);
+  const [isLoadingAttribution, setIsLoadingAttribution] = useState(false);
+
+  const registerImage = async () => {
+    setLoading(true);
+    setIsLoadingRegistration(true);
+    try {
+      const imageAsBase64 = await fileToBase64(form.getValues("file")[0]);
+      const registerRes = await axios
+        .post("/api/register", {
+          imageAsBase64,
+        })
+        .catch((error) => {
+          throw error;
+        });
+
+      console.log(registerRes.data);
+      setHasRegistration(true);
+    } catch (error: any) {
+      console.error(error);
+      setErrorMsg(error.toString());
+    } finally {
+      setLoading(false);
+      setIsLoadingRegistration(false);
+    }
+  };
 
   const makeAttribution = async () => {
     setLoading(true);
+    setIsLoadingAttribution(true);
     try {
       const attributionRes = await axios
         .post("/api/attribute", {
@@ -66,6 +95,7 @@ export default function Home() {
       setErrorMsg(error.toString());
     } finally {
       setLoading(false);
+      setIsLoadingAttribution(false);
     }
   };
 
@@ -86,63 +116,27 @@ export default function Home() {
 
       const imageRes = await axios
         .post("/api/remix", {
-          text_input: values.prompt,
+          // text_input: values.prompt,
           image_input: imageAsBase64,
         })
         .catch((error) => {
           console.error(error);
-          const artifactId = error.response.data.data[0].imageId;
+          const artifactId = error.response.data.data
+            ? error.response.data.data[0].imageId
+            : null;
           if (artifactId) {
             setArtifactId(artifactId);
             throw new Error(`${error.response.data.error}: ID: ${artifactId}`);
           }
-          throw error;
+          if (error.response.data.error === "This image is not registered") {
+            setHasRegistration(false);
+          }
+          throw new Error(`${error.response.data.error}`);
         });
 
       const images = imageRes.data;
       console.log(images);
       setResultImageUrl(images[0].url);
-
-      // const message: string | null = await fetchMessage(web3Address);
-      // const signedMessage: string | null = Boolean(minipay)
-      //   ? await signMinipayMessage(message)
-      //   : await signMessage(web3, web3Address, message);
-
-      // const fileAsBase64 = await fileToBase64(values.file[0]);
-
-      // const res = await fetch("/api/artifacts", {
-      //   method: "POST",
-      //   body: JSON.stringify({
-      //     fileAsBase64,
-      //     license: values.license,
-      //     authHeaders: {
-      //       address: web3Address,
-      //       message,
-      //       signature: signedMessage,
-      //     } as AuthHeaders,
-      //   }),
-      // });
-
-      // const imageTaskResponse = await axios.post("/api/submit", {
-      //   text_input: values.prompt,
-      // });
-
-      // const { taskId } = imageTaskResponse.data;
-
-      // let imageUrl = null;
-
-      // const pollForImage = async () => {
-      //   const pollResponse = await axios.post("/api/poll", { taskId });
-      //   if (pollResponse.data.uri) {
-      //     imageUrl = pollResponse.data.uri;
-      //     setResultImageUrl(imageUrl);
-      //     setLoading(false);
-      //   } else {
-      //     setTimeout(pollForImage, 4000); // Poll every 4 seconds
-      //   }
-      // };
-
-      // pollForImage();
     } catch (error: any) {
       const errStr = error.toString();
       setErrorMsg(errStr);
@@ -172,7 +166,8 @@ export default function Home() {
           <div className="flex justify-center">
             <Image
               src={resultImageUrl}
-              alt={form.getValues("prompt")}
+              // alt={form.getValues("prompt")}
+              alt="Artifact"
               width={500}
               height={500}
               className="rounded-lg shadow-lg"
@@ -186,10 +181,33 @@ export default function Home() {
         {errorMsg && <p className="text-red-500">{errorMsg}</p>}
         {artifactId && (
           <Button onClick={makeAttribution} disabled={loading}>
-            Make Attribution
+            {isLoadingAttribution ? (
+              <>
+                <Loader2Icon className="animate-spin w-4 h-4" />
+                Attributing...
+              </>
+            ) : (
+              "Make Attribution"
+            )}
           </Button>
         )}
+        {hasRegistration === false && (
+          <div>
+            <p>This image is not registered. Please register it first.</p>
+            <Button onClick={registerImage} disabled={loading}>
+              {isLoadingRegistration ? (
+                <>
+                  <Loader2Icon className="animate-spin w-4 h-4" />
+                  Registering...
+                </>
+              ) : (
+                "Register Image"
+              )}
+            </Button>
+          </div>
+        )}
         {hasAttribution && <p>Attribution successful!</p>}
+        {hasRegistration === true && <p>Registration successful!</p>}
       </main>
     </div>
   );
