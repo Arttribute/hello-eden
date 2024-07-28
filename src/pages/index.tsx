@@ -9,7 +9,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { fileToBase64 } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Loader2Icon } from "lucide-react";
+import { InboxIcon, Loader2Icon } from "lucide-react";
 
 const MAX_FILE_SIZE = 5000000;
 
@@ -31,7 +31,7 @@ const formSchema = z.object({
       (files: FileList) => ACCEPTED_IMAGE_MIME_TYPES.includes(files?.[0]?.type),
       "Only .jpg, .jpeg, .png and .webp formats are supported."
     ),
-  // prompt: z.string().min(1, "Please enter a prompt."),
+  prompt: z.string().min(1, "Please enter a prompt."),
 });
 
 export default function Home() {
@@ -116,7 +116,7 @@ export default function Home() {
 
       const imageRes = await axios
         .post("/api/remix", {
-          // text_input: values.prompt,
+          text_input: values.prompt,
           image_input: imageAsBase64,
         })
         .catch((error) => {
@@ -147,20 +147,19 @@ export default function Home() {
 
   return (
     <div className="flex">
-      <div className="h-full w-3/5 md:w-2/5 lg:w-1/6 rounded-none p-6 hidden lg:block">
+      <div className="h-screen bg-secondary w-3/5 md:w-2/5 lg:w-1/6 rounded-none p-6 hidden lg:block">
         <SideDrawer />
       </div>
       <Separator
         orientation="vertical"
-        className="min-h-[calc(100vh-4rem)] hidden lg:block w-[0.5px]"
+        className="min-h-[calc(100vh-4rem)] h-screen hidden lg:block w-[0.5px]"
       />
-      <div className="h-full w-min rounded-md border m-4 p-6">
+      <div className="h-full w-min bg-secondary rounded-md border m-4 p-6">
         <CreateBox form={form} onSubmit={onSubmit} loading={loading} />
       </div>
       <main className="p-4 flex-1">
         <h1 className="text-2xl font-bold mb-4">
-          Hello <span className="text-[#61af7b]">Eden</span>, meet{" "}
-          <span className="text-[#f74581]">Arttribute</span>
+          Hello <span className="text-[#61af7b]">Eden</span>
         </h1>
         {resultImageUrl ? (
           <div className="flex justify-center">
@@ -174,8 +173,9 @@ export default function Home() {
             />
           </div>
         ) : (
-          <div className="flex justify-center items-center min-h-[200px] border rounded-md">
-            <h1 className="text-lg">Nothing to see!</h1>
+          <div className="flex flex-col gap-1 justify-center items-center min-h-[200px] border rounded-md text-gray-500">
+            <InboxIcon className="h-10 w-10" />
+            <h1>Nothing here yet.</h1>
           </div>
         )}
         {errorMsg && <p className="text-red-500">{errorMsg}</p>}
@@ -193,7 +193,10 @@ export default function Home() {
         )}
         {hasRegistration === false && (
           <div>
-            <p>This image is not registered. Please register it first.</p>
+            <p>
+              Are you the creator of this image? Register it on Arttribute
+              artifacts registry here:
+            </p>
             <Button onClick={registerImage} disabled={loading}>
               {isLoadingRegistration ? (
                 <>

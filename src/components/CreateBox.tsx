@@ -16,7 +16,7 @@ import type { UseFormReturn } from "react-hook-form";
 type Props = {
   form: UseFormReturn<
     {
-      // prompt: string;
+      prompt: string;
       file?: any;
     },
     any,
@@ -29,7 +29,10 @@ type Props = {
 const CreateBox = ({ form, onSubmit, loading }: Props) => {
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="space-y-8 text-gray-400"
+      >
         <FormField
           control={form.control}
           name="file"
@@ -57,12 +60,12 @@ const CreateBox = ({ form, onSubmit, loading }: Props) => {
                   </div>
                 ) : (
                   <label htmlFor="file">
-                    <div className="relative bg-gray-50 flex items-center justify-center w-full h-[350px] lg:w-72 lg:h-72 rounded-lg border-2">
+                    <div className="relative flex items-center justify-center w-full h-[350px] lg:w-72 lg:h-72 rounded-lg border-2">
                       <ImageIcon className="w-16 h-16 text-gray-400" />
                     </div>
                   </label>
                 )}
-                <FormControl className="mt-1.5 w-full lg:w-72">
+                <FormControl className="mt-1.5 w-full lg:w-72 text-gray-400">
                   <Input
                     type="file"
                     id="file"
@@ -80,7 +83,7 @@ const CreateBox = ({ form, onSubmit, loading }: Props) => {
             </FormItem>
           )}
         />
-        {/* <FormField
+        <FormField
           control={form.control}
           name="prompt"
           render={({ field }) => (
@@ -89,13 +92,13 @@ const CreateBox = ({ form, onSubmit, loading }: Props) => {
               <FormControl>
                 <Input placeholder="Enter your prompt" {...field} />
               </FormControl>
-              <FormDescription>
+              <FormDescription className="text-gray-400">
                 This is the prompt that will be used to generate the image.
               </FormDescription>
               <FormMessage />
             </FormItem>
           )}
-        /> */}
+        />
         <Button
           type="submit"
           className="w-full lg:w-72"
